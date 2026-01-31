@@ -9,7 +9,8 @@
     "lint": "next lint",
     "crawl": "tsx scripts/crawl.ts",
     "crawl:python": "python crawl_python.py",
-    "crawl:details": "python crawl_all_details.py"
+    "crawl:details": "python crawl_all_details.py",
+    "crawl:details:fast": "python crawl_all_details_fast.py"
   },
   "dependencies": {
     "next": "14.2.16",
