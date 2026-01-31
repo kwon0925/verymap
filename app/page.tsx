@@ -146,7 +146,12 @@ export default function Home() {
 
   const handleSidoChange = (sido: string) => {
     setSelectedSido(sido);
-    setSelectedSigungu('');
+    // 시도가 "전체"이면 시군구도 자동으로 "전체"로 설정
+    if (!sido) {
+      setSelectedSigungu('');
+    } else {
+      setSelectedSigungu('');
+    }
   };
 
   const handleShopClick = (shop: Shop) => {
@@ -181,88 +186,80 @@ export default function Home() {
       {/* 필터 섹션 */}
       <div className="bg-white shadow-md sticky top-[88px] z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* 지역 필터 그룹 */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">📍 지역</h3>
-              
-              {/* 시도 선택 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  시/도
-                </label>
-                <select
-                  value={selectedSido}
-                  onChange={(e) => handleSidoChange(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-base"
-                >
-                  <option value="">전체 지역</option>
-                  {sidoList.map(sido => {
-                    const count = shops.filter(s => matchesSido(s.address, sido)).length;
-                    return (
-                      <option key={sido} value={sido}>
-                        {sido} ({count})
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-
-              {/* 시군구 선택 */}
-              {selectedSido && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    시/군/구
-                  </label>
-                  <select
-                    value={selectedSigungu}
-                    onChange={(e) => setSelectedSigungu(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-base"
-                  >
-                    <option value="">전체</option>
-                    {sigunguList.map(sigungu => {
-                      const count = shops.filter(s => 
-                        matchesSido(s.address, selectedSido) && matchesSigungu(s.address, sigungu)
-                      ).length;
-                      return (
-                        <option key={sigungu} value={sigungu}>
-                          {sigungu} ({count})
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-              )}
+          {/* 필터를 한 줄에 표시 (모바일 최적화) */}
+          <div className="flex flex-wrap gap-2 items-end">
+            {/* 시도 선택 */}
+            <div className="flex-1 min-w-[120px]">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                시/도
+              </label>
+              <select
+                value={selectedSido}
+                onChange={(e) => handleSidoChange(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              >
+                <option value="">전체</option>
+                {sidoList.map(sido => {
+                  const count = shops.filter(s => matchesSido(s.address, sido)).length;
+                  return (
+                    <option key={sido} value={sido}>
+                      {sido} ({count})
+                    </option>
+                  );
+                })}
+              </select>
             </div>
 
-            {/* 결제비율 필터 그룹 */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">💳 결제비율</h3>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  결제비율
-                </label>
-                <select
-                  value={selectedPaymentRatio}
-                  onChange={(e) => setSelectedPaymentRatio(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-base"
-                >
-                  <option value="">전체</option>
-                  {paymentRatioList.map(ratio => {
-                    const count = shops.filter(s => s.paymentRatio === ratio).length;
-                    return (
-                      <option key={ratio} value={ratio}>
-                        {ratio} ({count})
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
+            {/* 시군구 선택 */}
+            <div className={`flex-1 min-w-[120px] ${!selectedSido ? 'opacity-50 pointer-events-none' : ''}`}>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                시/군/구
+              </label>
+              <select
+                value={selectedSido ? selectedSigungu : ''}
+                onChange={(e) => setSelectedSigungu(e.target.value)}
+                disabled={!selectedSido}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:bg-gray-100"
+              >
+                <option value="">전체</option>
+                {selectedSido && sigunguList.map(sigungu => {
+                  const count = shops.filter(s => 
+                    matchesSido(s.address, selectedSido) && matchesSigungu(s.address, sigungu)
+                  ).length;
+                  return (
+                    <option key={sigungu} value={sigungu}>
+                      {sigungu} ({count})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            {/* 결제비율 선택 */}
+            <div className="flex-1 min-w-[120px]">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                결제비율
+              </label>
+              <select
+                value={selectedPaymentRatio}
+                onChange={(e) => setSelectedPaymentRatio(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              >
+                <option value="">전체</option>
+                {paymentRatioList.map(ratio => {
+                  const count = shops.filter(s => s.paymentRatio === ratio).length;
+                  return (
+                    <option key={ratio} value={ratio}>
+                      {ratio} ({count})
+                    </option>
+                  );
+                })}
+              </select>
             </div>
           </div>
 
           {/* 결과 카운트 */}
-          <div className="mt-4 text-sm text-gray-600">
+          <div className="mt-3 text-sm text-gray-600">
             총 <span className="font-bold text-blue-600">{filteredShops.length}</span>개의 상점
           </div>
         </div>
