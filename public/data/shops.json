@@ -3272,12 +3272,10 @@
     "link": "https://pay.verychat.io/shops/cICyq",
     "phone": "010-2473-3548",
     "hours": "",
-    "description": "VeryPay로 현금처럼 결제할 수 있는 다양한 매장을 만나보세요",
+    "description": "오리불고기전문점\n오리주물럭(매꼼.맛짱)\n오리탕\n점심특선ㅡ쌈밥정식\n(신선한야채랑 함께하는건강밥상)\n결제 100%. 1베리 10원",
     "address_detail": "광주광역시 남구 백운로 72-1",
-    "price_info": "오리주물럭(매꼼.맛짱)",
-    "payment_methods": [
-      "오리주물럭(매꼼.맛짱)"
-    ]
+    "price_info": "",
+    "payment_methods": []
   },
   {
     "name": "Bubur Ayam Bang Edwin",
