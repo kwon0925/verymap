@@ -20,10 +20,10 @@ total_count = 0
 start_time_global = None
 
 def crawl_shop_detail(url, driver):
-    """상점 상세 페이지 완전 크롤링"""
+    """상점 상세 페이지 완전 크롤링 (오리궁뎅이 백운점 방식)"""
     try:
         driver.get(url)
-        time.sleep(1.5)  # 페이지 로딩 대기 (병렬 처리 시 더 짧게)
+        time.sleep(2)  # 페이지 로딩 충분히 대기
         
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         all_text = soup.get_text()
@@ -37,12 +37,12 @@ def crawl_shop_detail(url, driver):
             'payment_methods': []
         }
         
-        # 전화번호 추출
+        # 전화번호 - 더 정확한 패턴
         phone_patterns = [
-            r'010[-.\s]?\d{4}[-.\s]?\d{4}',  # 010-xxxx-xxxx
-            r'\+82[-.\s]?10[-.\s]?\d{4}[-.\s]?\d{4}',  # +82-10-xxxx-xxxx
-            r'02[-.\s]?\d{3,4}[-.\s]?\d{4}',  # 02-xxx-xxxx
-            r'0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}',  # 기타 지역번호
+            r'010[-.\s]?\d{4}[-.\s]?\d{4}',
+            r'\+82[-.\s]?10[-.\s]?\d{4}[-.\s]?\d{4}',
+            r'02[-.\s]?\d{3,4}[-.\s]?\d{4}',
+            r'0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}',
         ]
         
         for pattern in phone_patterns:
@@ -60,9 +60,8 @@ def crawl_shop_detail(url, driver):
         # 페이지의 모든 텍스트를 줄 단위로 분석
         lines = [line.strip() for line in all_text.split('\n') if line.strip()]
         
-        # 매장 소개 정보 찾기
+        # 매장 소개가 포함된 줄 찾기 (한 줄에 모든 정보가 있을 수 있음)
         description_parts = []
-        found_intro = False
         
         for i, line in enumerate(lines):
             # 영업시간
@@ -71,30 +70,37 @@ def crawl_shop_detail(url, driver):
                 if i + 1 < len(lines):
                     detail['hours'] += ' ' + lines[i + 1]
             
-            # 매장 소개 시작점 찾기
-            if any(kw in line for kw in ['오리불고기', '오리주물럭', '오리탕', '점심특선', '쌈밥', '신선한야채', '건강밥상', '결제', '베리']):
-                found_intro = True
-            
-            # 매장 소개 정보 수집
-            if found_intro:
-                if any(kw in line for kw in ['VERY 단가', 'VERY단가', '결제비율', '결제 비율']):
-                    if 'VERY 단가' in line or 'VERY단가' in line:
-                        if i + 1 < len(lines):
-                            detail['price_info'] = lines[i + 1]
-                    if '결제비율' in line or '결제 비율' in line:
-                        if i + 1 < len(lines):
-                            detail['payment_methods'].append(lines[i + 1])
-                    break
+            # 매장 소개가 포함된 줄 찾기 - 정규식으로 분리
+            if any(kw in line for kw in ['오리불고기', '오리주물럭', '오리탕', '점심특선', '쌈밥', '신선한야채', '건강밥상', '메뉴', '특선', '정식']):
+                # 정규식으로 메뉴 정보 추출
+                menu_patterns = [
+                    r'오리불고기[전문점]*',
+                    r'오리주물럭\([^)]+\)',
+                    r'오리탕',
+                    r'점심특선[ㅡ-]?[^(\n]+',
+                    r'\([^)]*야채[^)]*\)',
+                    r'결제\s*\d+%\.\s*1베리\s*\d+원'
+                ]
                 
-                skip_keywords = ['KR', 'verypay', 'verychain', 'verychat', 'veryads', 'VeryPay', 'Logo']
-                if line and len(line) > 1:
+                for pattern in menu_patterns:
+                    matches = re.findall(pattern, line)
+                    for match in matches:
+                        if match.strip() and match not in description_parts:
+                            description_parts.append(match.strip())
+                
+                # 패턴으로 찾지 못한 경우 전체 텍스트 사용
+                if not description_parts and len(line) > 5:
+                    # 불필요한 키워드 제외
+                    skip_keywords = ['KR', 'verypay', 'verychain', 'verychat', 'veryads', 'VeryPay', 'Logo', 'VERYPAY']
                     if not any(skip in line for skip in skip_keywords):
                         if line not in description_parts:
                             description_parts.append(line)
         
+        # 매장 소개를 하나의 문자열로 합치기
         if description_parts:
             detail['description'] = '\n'.join(description_parts)
         
+        # 설명이 없으면 메타 태그에서 찾기
         if not detail['description']:
             meta_desc = soup.find('meta', attrs={'name': 'description'})
             if meta_desc:
@@ -104,7 +110,7 @@ def crawl_shop_detail(url, driver):
         
     except Exception as e:
         with print_lock:
-            print(f"  [오류] {url}: {e}")
+            print(f"  [오류] {url}: {str(e)[:50]}")
         return {
             'phone': '',
             'hours': '',
