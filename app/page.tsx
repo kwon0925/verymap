@@ -71,6 +71,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [selectedSido, setSelectedSido] = useState<string>('');
   const [selectedSigungu, setSelectedSigungu] = useState<string>('');
+  const [selectedPaymentRatio, setSelectedPaymentRatio] = useState<string>('');
 
   useEffect(() => {
     // 데이터 로드
@@ -98,7 +99,22 @@ export default function Home() {
     return sido ? sido.sigungu.map(sg => sg.name) : [];
   }, [selectedSido]);
 
-  // 필터링된 상점 (유연한 주소 매칭)
+  // 결제비율 목록 (고유값 추출)
+  const paymentRatioList = useMemo(() => {
+    const ratios = new Set<string>();
+    shops.forEach(shop => {
+      if (shop.paymentRatio && shop.paymentRatio !== '-') {
+        ratios.add(shop.paymentRatio);
+      }
+    });
+    return Array.from(ratios).sort((a, b) => {
+      const numA = parseInt(a.replace('%', ''));
+      const numB = parseInt(b.replace('%', ''));
+      return numB - numA; // 내림차순 정렬
+    });
+  }, [shops]);
+
+  // 필터링된 상점 (지역 필터와 결제비율 필터 독립적으로 작동)
   const filteredShops = useMemo(() => {
     return shops.filter(shop => {
       const address = shop.address;
@@ -117,9 +133,16 @@ export default function Home() {
         }
       }
       
+      // 결제비율 필터 (독립적으로 작동)
+      if (selectedPaymentRatio) {
+        if (shop.paymentRatio !== selectedPaymentRatio) {
+          return false;
+        }
+      }
+      
       return true;
     });
-  }, [shops, selectedSido, selectedSigungu]);
+  }, [shops, selectedSido, selectedSigungu, selectedPaymentRatio]);
 
   const handleSidoChange = (sido: string) => {
     setSelectedSido(sido);
@@ -158,54 +181,84 @@ export default function Home() {
       {/* 필터 섹션 */}
       <div className="bg-white shadow-md sticky top-[88px] z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="space-y-3">
-            {/* 시도 선택 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                시/도
-              </label>
-              <select
-                value={selectedSido}
-                onChange={(e) => handleSidoChange(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-base"
-              >
-                <option value="">전체 지역</option>
-                {sidoList.map(sido => {
-                  const count = shops.filter(s => matchesSido(s.address, sido)).length;
-                  return (
-                    <option key={sido} value={sido}>
-                      {sido} ({count})
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            {/* 시군구 선택 */}
-            {selectedSido && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* 지역 필터 그룹 */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">📍 지역</h3>
+              
+              {/* 시도 선택 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  시/군/구
+                  시/도
                 </label>
                 <select
-                  value={selectedSigungu}
-                  onChange={(e) => setSelectedSigungu(e.target.value)}
+                  value={selectedSido}
+                  onChange={(e) => handleSidoChange(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-base"
                 >
-                  <option value="">전체</option>
-                  {sigunguList.map(sigungu => {
-                    const count = shops.filter(s => 
-                      matchesSido(s.address, selectedSido) && matchesSigungu(s.address, sigungu)
-                    ).length;
+                  <option value="">전체 지역</option>
+                  {sidoList.map(sido => {
+                    const count = shops.filter(s => matchesSido(s.address, sido)).length;
                     return (
-                      <option key={sigungu} value={sigungu}>
-                        {sigungu} ({count})
+                      <option key={sido} value={sido}>
+                        {sido} ({count})
                       </option>
                     );
                   })}
                 </select>
               </div>
-            )}
+
+              {/* 시군구 선택 */}
+              {selectedSido && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    시/군/구
+                  </label>
+                  <select
+                    value={selectedSigungu}
+                    onChange={(e) => setSelectedSigungu(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-base"
+                  >
+                    <option value="">전체</option>
+                    {sigunguList.map(sigungu => {
+                      const count = shops.filter(s => 
+                        matchesSido(s.address, selectedSido) && matchesSigungu(s.address, sigungu)
+                      ).length;
+                      return (
+                        <option key={sigungu} value={sigungu}>
+                          {sigungu} ({count})
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* 결제비율 필터 그룹 */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">💳 결제비율</h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  결제비율
+                </label>
+                <select
+                  value={selectedPaymentRatio}
+                  onChange={(e) => setSelectedPaymentRatio(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-base"
+                >
+                  <option value="">전체</option>
+                  {paymentRatioList.map(ratio => {
+                    const count = shops.filter(s => s.paymentRatio === ratio).length;
+                    return (
+                      <option key={ratio} value={ratio}>
+                        {ratio} ({count})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
           </div>
 
           {/* 결과 카운트 */}
