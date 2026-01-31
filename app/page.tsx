@@ -193,48 +193,48 @@ export default function Home() {
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 시/도
               </label>
-              <select
+              <CustomSelect
                 value={selectedSido}
-                onChange={(e) => handleSidoChange(e.target.value)}
-                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                style={{ fontSize: '12px' }}
-              >
-                <option value="">전체</option>
-                {sidoList.map(sido => {
-                  const count = shops.filter(s => matchesSido(s.address, sido)).length;
-                  return (
-                    <option key={sido} value={sido}>
-                      {sido} ({count})
-                    </option>
-                  );
-                })}
-              </select>
+                onChange={(value) => handleSidoChange(value)}
+                options={[
+                  { value: '', label: '전체' },
+                  ...sidoList.map(sido => {
+                    const count = shops.filter(s => matchesSido(s.address, sido)).length;
+                    return {
+                      value: sido,
+                      label: `${sido} (${count})`
+                    };
+                  })
+                ]}
+                placeholder="전체"
+                className="w-full"
+              />
             </div>
 
             {/* 시군구 선택 */}
-            <div className={`flex-1 min-w-[120px] ${!selectedSido ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className="flex-1 min-w-[120px]">
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 시/군/구
               </label>
-              <select
+              <CustomSelect
                 value={selectedSido ? selectedSigungu : ''}
-                onChange={(e) => setSelectedSigungu(e.target.value)}
+                onChange={(value) => setSelectedSigungu(value)}
+                options={[
+                  { value: '', label: '전체' },
+                  ...(selectedSido ? sigunguList.map(sigungu => {
+                    const count = shops.filter(s => 
+                      matchesSido(s.address, selectedSido) && matchesSigungu(s.address, sigungu)
+                    ).length;
+                    return {
+                      value: sigungu,
+                      label: `${sigungu} (${count})`
+                    };
+                  }) : [])
+                ]}
+                placeholder="전체"
                 disabled={!selectedSido}
-                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:bg-gray-100"
-                style={{ fontSize: '12px' }}
-              >
-                <option value="">전체</option>
-                {selectedSido && sigunguList.map(sigungu => {
-                  const count = shops.filter(s => 
-                    matchesSido(s.address, selectedSido) && matchesSigungu(s.address, sigungu)
-                  ).length;
-                  return (
-                    <option key={sigungu} value={sigungu}>
-                      {sigungu} ({count})
-                    </option>
-                  );
-                })}
-              </select>
+                className="w-full"
+              />
             </div>
 
             {/* 결제비율 선택 */}
@@ -242,22 +242,22 @@ export default function Home() {
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 결제비율
               </label>
-              <select
+              <CustomSelect
                 value={selectedPaymentRatio}
-                onChange={(e) => setSelectedPaymentRatio(e.target.value)}
-                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                style={{ fontSize: '12px' }}
-              >
-                <option value="">전체</option>
-                {paymentRatioList.map(ratio => {
-                  const count = shops.filter(s => s.paymentRatio === ratio).length;
-                  return (
-                    <option key={ratio} value={ratio}>
-                      {ratio} ({count})
-                    </option>
-                  );
-                })}
-              </select>
+                onChange={(value) => setSelectedPaymentRatio(value)}
+                options={[
+                  { value: '', label: '전체' },
+                  ...paymentRatioList.map(ratio => {
+                    const count = shops.filter(s => s.paymentRatio === ratio).length;
+                    return {
+                      value: ratio,
+                      label: `${ratio} (${count})`
+                    };
+                  })
+                ]}
+                placeholder="전체"
+                className="w-full"
+              />
             </div>
           </div>
 
