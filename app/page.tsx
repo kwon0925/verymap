@@ -20,6 +20,44 @@ interface DosiItem {
   upmyeondong: string;
 }
 
+// 시도 매칭 패턴 (유연한 매칭을 위한 매핑)
+const SIDO_PATTERNS: Record<string, string[]> = {
+  '서울특별시': ['서울'],
+  '부산광역시': ['부산'],
+  '대구광역시': ['대구'],
+  '인천광역시': ['인천'],
+  '광주광역시': ['광주'],
+  '대전광역시': ['대전'],
+  '울산광역시': ['울산'],
+  '세종특별자치시': ['세종'],
+  '경기도': ['경기'],
+  '강원특별자치도': ['강원'],
+  '충청북도': ['충북', '충청북'],
+  '충청남도': ['충남', '충청남'],
+  '전북특별자치도': ['전북', '전라북', '전라북도'],
+  '전라남도': ['전남', '전라남'],
+  '경상북도': ['경북', '경상북'],
+  '경상남도': ['경남', '경상남'],
+  '제주특별자치도': ['제주'],
+};
+
+// 주소가 특정 시도에 속하는지 확인하는 함수
+function matchesSido(address: string, sido: string): boolean {
+  // 시도 이름 자체가 포함되어 있는지 확인
+  if (address.includes(sido)) {
+    return true;
+  }
+  
+  // 축약형이나 별칭도 확인
+  const patterns = SIDO_PATTERNS[sido] || [];
+  return patterns.some(pattern => address.includes(pattern));
+}
+
+// 주소가 특정 시군구에 속하는지 확인하는 함수
+function matchesSigungu(address: string, sigungu: string): boolean {
+  return address.includes(sigungu);
+}
+
 export default function Home() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,23 +90,21 @@ export default function Home() {
     return sido ? sido.sigungu.map(sg => sg.name) : [];
   }, [selectedSido]);
 
-  // 필터링된 상점 (주소 매칭)
+  // 필터링된 상점 (유연한 주소 매칭)
   const filteredShops = useMemo(() => {
     return shops.filter(shop => {
       const address = shop.address;
       
-      // 시도 필터
+      // 시도 필터 (유연한 매칭)
       if (selectedSido) {
-        // 시도명이 주소에 포함되는지 확인
-        if (!address.includes(selectedSido)) {
+        if (!matchesSido(address, selectedSido)) {
           return false;
         }
       }
       
-      // 시군구 필터
+      // 시군구 필터 (유연한 매칭)
       if (selectedSigungu) {
-        // 시군구명이 주소에 포함되는지 확인
-        if (!address.includes(selectedSigungu)) {
+        if (!matchesSigungu(address, selectedSigungu)) {
           return false;
         }
       }
@@ -119,7 +155,7 @@ export default function Home() {
               >
                 <option value="">전체 지역</option>
                 {sidoList.map(sido => {
-                  const count = shops.filter(s => s.address.includes(sido)).length;
+                  const count = shops.filter(s => matchesSido(s.address, sido)).length;
                   return (
                     <option key={sido} value={sido}>
                       {sido} ({count})
@@ -143,7 +179,7 @@ export default function Home() {
                   <option value="">전체</option>
                   {sigunguList.map(sigungu => {
                     const count = shops.filter(s => 
-                      s.address.includes(selectedSido) && s.address.includes(sigungu)
+                      matchesSido(s.address, selectedSido) && matchesSigungu(s.address, sigungu)
                     ).length;
                     return (
                       <option key={sigungu} value={sigungu}>
