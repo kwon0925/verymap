@@ -196,7 +196,8 @@ export default function Home() {
               <select
                 value={selectedSido}
                 onChange={(e) => handleSidoChange(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                style={{ fontSize: '12px' }}
               >
                 <option value="">전체</option>
                 {sidoList.map(sido => {
@@ -219,7 +220,8 @@ export default function Home() {
                 value={selectedSido ? selectedSigungu : ''}
                 onChange={(e) => setSelectedSigungu(e.target.value)}
                 disabled={!selectedSido}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:bg-gray-100"
+                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white disabled:bg-gray-100"
+                style={{ fontSize: '12px' }}
               >
                 <option value="">전체</option>
                 {selectedSido && sigunguList.map(sigungu => {
@@ -243,7 +245,8 @@ export default function Home() {
               <select
                 value={selectedPaymentRatio}
                 onChange={(e) => setSelectedPaymentRatio(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                style={{ fontSize: '12px' }}
               >
                 <option value="">전체</option>
                 {paymentRatioList.map(ratio => {
