@@ -34,10 +34,29 @@ def crawl_shop_detail(url):
             'payment_methods': []
         }
         
-        # 전화번호
-        phone_match = re.search(r'(\d{2,3}[-.]?\d{3,4}[-.]?\d{4})', all_text)
-        if phone_match:
-            detail['phone'] = phone_match.group(1)
+        # 전화번호 - 더 정확한 패턴
+        # 010-xxxx-xxxx, 010-xxxx-xxxx, 02-xxx-xxxx 등
+        phone_patterns = [
+            r'010[-.\s]?\d{4}[-.\s]?\d{4}',  # 010-xxxx-xxxx
+            r'\+82[-.\s]?10[-.\s]?\d{4}[-.\s]?\d{4}',  # +82-10-xxxx-xxxx
+            r'02[-.\s]?\d{3,4}[-.\s]?\d{4}',  # 02-xxx-xxxx
+            r'0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}',  # 기타 지역번호
+        ]
+        
+        for pattern in phone_patterns:
+            phone_match = re.search(pattern, all_text)
+            if phone_match:
+                phone = phone_match.group(0).replace(' ', '').replace('.', '-')
+                # 주소의 숫자 패턴 제외 (72-1 같은 것)
+                if not re.match(r'^\d{1,2}-\d{1,2}$', phone):
+                    # +82-10-xxxx-xxxx 형식을 010-xxxx-xxxx로 변환
+                    if phone.startswith('+82'):
+                        phone = phone.replace('+82', '0').replace('-', '')
+                        # 010xxxxxxxx 형식을 010-xxxx-xxxx로 변환
+                        if len(phone) == 11 and phone.startswith('010'):
+                            phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
+                    detail['phone'] = phone
+                    break
         
         # 페이지의 모든 텍스트를 줄 단위로 분석
         lines = [line.strip() for line in all_text.split('\n') if line.strip()]
