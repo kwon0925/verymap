@@ -49,16 +49,40 @@ const SIDO_PATTERNS: Record<string, string[]> = {
   '제주특별자치도': ['제주'],
 };
 
+// 시군구 이름으로 시도 찾기 (dosi.json 활용)
+function getSidoFromSigungu(sigunguName: string): string | null {
+  for (const sidoData of dosiData.sido) {
+    const found = sidoData.sigungu.some(sg => 
+      sigunguName.includes(sg.name) || sg.name.includes(sigunguName)
+    );
+    if (found) {
+      return sidoData.name;
+    }
+  }
+  return null;
+}
+
 // 주소가 특정 시도에 속하는지 확인하는 함수
 function matchesSido(address: string, sido: string): boolean {
-  // 시도 이름 자체가 포함되어 있는지 확인
+  // 1. 시도 이름 자체가 포함되어 있는지 확인
   if (address.includes(sido)) {
     return true;
   }
   
-  // 축약형이나 별칭도 확인
+  // 2. 축약형이나 별칭도 확인
   const patterns = SIDO_PATTERNS[sido] || [];
-  return patterns.some(pattern => address.includes(pattern));
+  if (patterns.some(pattern => address.includes(pattern))) {
+    return true;
+  }
+  
+  // 3. 시군구 이름만 있는 경우 - dosi.json에서 시도 찾기
+  // 예: "성남시", "진주시" 같은 경우
+  const addressSido = getSidoFromSigungu(address);
+  if (addressSido && addressSido === sido) {
+    return true;
+  }
+  
+  return false;
 }
 
 // 주소가 특정 시군구에 속하는지 확인하는 함수
