@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import dosiData from '@/dosi.json';
+import CustomSelect from './components/CustomSelect';
 
 interface Shop {
   name: string;
@@ -212,7 +213,7 @@ export default function Home() {
             </div>
 
             {/* 시군구 선택 */}
-            <div className="flex-1 min-w-[120px]">
+            <div className={`flex-1 min-w-[120px] ${!selectedSido ? 'opacity-50 pointer-events-none' : ''}`}>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 시/군/구
               </label>
