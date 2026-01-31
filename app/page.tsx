@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import dosiData from '@/dosi.json';
 
 interface Shop {
@@ -65,6 +66,7 @@ function matchesSigungu(address: string, sigungu: string): boolean {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSido, setSelectedSido] = useState<string>('');
@@ -122,6 +124,14 @@ export default function Home() {
   const handleSidoChange = (sido: string) => {
     setSelectedSido(sido);
     setSelectedSigungu('');
+  };
+
+  const handleShopClick = (shop: Shop) => {
+    if (shop.link) {
+      // 링크에서 ID 추출 (예: /shops/cICyq)
+      const shopId = shop.link.split('/').pop();
+      router.push(`/shops/${shopId}`);
+    }
   };
 
   if (loading) {
@@ -216,7 +226,8 @@ export default function Home() {
             {filteredShops.map((shop, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-4 border border-gray-100"
+                onClick={() => handleShopClick(shop)}
+                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all p-4 border border-gray-100 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
               >
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-bold text-lg text-gray-900 flex-1">

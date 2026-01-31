@@ -3269,7 +3269,15 @@
     "category": "식당/카페",
     "veryPrice": "10원",
     "paymentRatio": "100%",
-    "link": "https://pay.verychat.io/shops/cICyq"
+    "link": "https://pay.verychat.io/shops/cICyq",
+    "phone": "72-18210247",
+    "hours": "",
+    "description": "VeryPay로 현금처럼 결제할 수 있는 다양한 매장을 만나보세요",
+    "address_detail": "광주광역시 남구 백운로 72-1",
+    "price_info": "오리주물럭(매꼼.맛짱)",
+    "payment_methods": [
+      "오리주물럭(매꼼.맛짱)"
+    ]
   },
   {
     "name": "Bubur Ayam Bang Edwin",
