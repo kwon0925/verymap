@@ -131,7 +131,28 @@ export default function ShopDetail({ params }: { params: { id: string } }) {
           {shop.veryPrice && shop.veryPrice !== '-' && (
             <div className="border-t pt-4">
               <h3 className="text-sm font-semibold text-gray-500 mb-2">💰 VERY 단가</h3>
-              <p className="text-2xl font-bold text-gray-900">{shop.price_info || shop.veryPrice}</p>
+              <p className="text-2xl font-bold text-gray-900">{shop.veryPrice}</p>
+            </div>
+          )}
+
+          {/* 매장 소개 / 메뉴 정보 */}
+          {shop.price_info && shop.price_info !== shop.veryPrice && (
+            <div className="border-t pt-4">
+              <h3 className="text-sm font-semibold text-gray-500 mb-2">📋 매장 소개</h3>
+              <div className="space-y-2">
+                <p className="text-gray-900">{shop.price_info}</p>
+                {shop.payment_methods && shop.payment_methods.length > 0 && 
+                 shop.payment_methods[0] !== shop.price_info && (
+                  <div className="mt-3">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">메뉴:</p>
+                    <div className="space-y-1">
+                      {shop.payment_methods.map((menu, idx) => (
+                        <p key={idx} className="text-sm text-gray-600 pl-2">• {menu}</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -140,13 +161,6 @@ export default function ShopDetail({ params }: { params: { id: string } }) {
             <div className="border-t pt-4">
               <h3 className="text-sm font-semibold text-gray-500 mb-2">💳 결제비율</h3>
               <p className="text-2xl font-bold text-gray-900">{shop.paymentRatio}</p>
-              {shop.payment_methods && shop.payment_methods.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {shop.payment_methods.map((method, idx) => (
-                    <p key={idx} className="text-sm text-gray-600">{method}</p>
-                  ))}
-                </div>
-              )}
             </div>
           )}
 
