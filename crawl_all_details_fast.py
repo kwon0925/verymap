@@ -13,6 +13,12 @@ from threading import Lock
 print_lock = Lock()
 update_lock = Lock()
 
+# 진행 상황 추적
+progress_lock = Lock()
+completed_count = 0
+total_count = 0
+start_time_global = None
+
 def crawl_shop_detail(url, driver):
     """상점 상세 페이지 완전 크롤링"""
     try:
@@ -129,10 +135,32 @@ def process_shop(shop, original_index, display_index, total):
         if not shop.get('link'):
             return None, original_index
         
+        shop_name = shop.get('name', 'Unknown')[:40]
+        
+        # 시작 알림
+        with print_lock:
+            print(f"[진행중] {shop_name}... 크롤링 시작")
+        
         detail = crawl_shop_detail(shop['link'], driver)
         
-        with print_lock:
-            print(f"[{display_index}/{total}] {shop.get('name', 'Unknown')[:30]}... 완료")
+        # 완료 알림 및 진행률 업데이트
+        global completed_count
+        with progress_lock:
+            completed_count += 1
+            elapsed = time.time() - start_time_global if start_time_global else 0
+            progress = (completed_count / total) * 100
+            avg_time = elapsed / completed_count if completed_count > 0 else 0
+            remaining = (total - completed_count) * avg_time / 5  # 5개 병렬 처리 고려
+            
+            # 진행률 바
+            bar_length = 30
+            filled = int(bar_length * completed_count / total)
+            bar = '█' * filled + '░' * (bar_length - filled)
+            
+            print(f"\n[{completed_count}/{total}] {progress:.1f}% |{bar}|")
+            print(f"  ✓ {shop_name}")
+            print(f"  ⏱️  경과: {elapsed/60:.1f}분 | 예상 남은 시간: {remaining/60:.1f}분")
+            print("-" * 60)
         
         return (shop, detail), original_index
     finally:
@@ -147,9 +175,17 @@ if __name__ == '__main__':
     # 링크가 있는 매장만 필터링
     shops_with_links = [(shop, i) for i, shop in enumerate(shops) if shop.get('link')]
     
-    print(f"총 {len(shops_with_links)}개의 매장 상세 정보 크롤링 시작...")
-    print(f"병렬 처리: 최대 5개 동시 실행 (약 {len(shops_with_links) * 1.5 / 5 / 60:.1f}분 예상)")
-    print("=" * 50)
+    global total_count, start_time_global
+    total_count = len(shops_with_links)
+    start_time_global = time.time()
+    
+    print("=" * 60)
+    print(f"🚀 전체 매장 상세 정보 크롤링 시작")
+    print(f"📊 총 {total_count}개의 매장")
+    print(f"⚡ 병렬 처리: 최대 5개 동시 실행")
+    print(f"⏱️  예상 소요 시간: 약 {total_count * 1.5 / 5 / 60:.1f}분")
+    print("=" * 60)
+    print("\n진행 상황:\n")
     
     start_time = time.time()
     updated_count = 0
@@ -178,12 +214,15 @@ if __name__ == '__main__':
     
     elapsed_time = time.time() - start_time
     
-    print("=" * 50)
-    print(f"\n총 {updated_count}개의 매장 상세 정보 크롤링 완료!")
-    print(f"소요 시간: {elapsed_time:.1f}초 ({elapsed_time/60:.1f}분)")
+    print("\n" + "=" * 60)
+    print(f"✅ 크롤링 완료!")
+    print(f"📊 총 {updated_count}개의 매장 상세 정보 업데이트")
+    print(f"⏱️  소요 시간: {elapsed_time:.1f}초 ({elapsed_time/60:.1f}분)")
+    print("=" * 60)
     
+    print("\n💾 데이터 저장 중...")
     # 저장
     with open('public/data/shops.json', 'w', encoding='utf-8') as f:
         json.dump(shops, f, ensure_ascii=False, indent=2)
     
-    print("shops.json 저장 완료!")
+    print("✅ shops.json 저장 완료!")
