@@ -122,19 +122,19 @@ def create_driver():
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     return driver
 
-def process_shop(shop, index, total):
+def process_shop(shop, original_index, display_index, total):
     """단일 매장 처리"""
     driver = create_driver()
     try:
         if not shop.get('link'):
-            return None, index
+            return None, original_index
         
         detail = crawl_shop_detail(shop['link'], driver)
         
         with print_lock:
-            print(f"[{index}/{total}] {shop.get('name', 'Unknown')[:30]}... 완료")
+            print(f"[{display_index}/{total}] {shop.get('name', 'Unknown')[:30]}... 완료")
         
-        return (shop, detail), index
+        return (shop, detail), original_index
     finally:
         driver.quit()
 
@@ -158,19 +158,19 @@ if __name__ == '__main__':
     with ThreadPoolExecutor(max_workers=5) as executor:
         # 모든 작업 제출
         future_to_shop = {
-            executor.submit(process_shop, shop, i+1, len(shops_with_links)): (shop, i)
-            for shop, i in shops_with_links
+            executor.submit(process_shop, shop, original_index, display_index+1, len(shops_with_links)): (shop, original_index)
+            for display_index, (shop, original_index) in enumerate(shops_with_links)
         }
         
         # 완료된 작업 처리
         for future in as_completed(future_to_shop):
             try:
-                result, index = future.result()
+                result, original_index = future.result()
                 if result:
                     shop, detail = result
                     # 기존 데이터에 상세 정보 업데이트
                     with update_lock:
-                        shops[index].update(detail)
+                        shops[original_index].update(detail)
                         updated_count += 1
             except Exception as e:
                 with print_lock:
