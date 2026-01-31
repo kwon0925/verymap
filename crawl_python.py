@@ -10,6 +10,69 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
+def crawl_shop_detail(driver, shop_url):
+    """개별 상점 상세 페이지 크롤링"""
+    try:
+        driver.get(shop_url)
+        time.sleep(2)  # 페이지 로딩 대기
+        
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        
+        detail_info = {
+            'phone': '',
+            'hours': '',
+            'description': '',
+            'kakao': '',
+            'instagram': ''
+        }
+        
+        # 전화번호 추출
+        phone_elements = soup.find_all(['a', 'span', 'p', 'div'], string=lambda text: text and ('전화' in text or 'TEL' in text or 'Phone' in text))
+        for elem in phone_elements:
+            parent = elem.parent
+            if parent:
+                text = parent.get_text()
+                # 전화번호 패턴 찾기 (010-xxxx-xxxx, 02-xxx-xxxx 등)
+                import re
+                phone_match = re.search(r'(\d{2,3}[-.\s]?\d{3,4}[-.\s]?\d{4})', text)
+                if phone_match:
+                    detail_info['phone'] = phone_match.group(1).strip()
+                    break
+        
+        # 전화번호가 없으면 href="tel:" 찾기
+        if not detail_info['phone']:
+            tel_link = soup.find('a', href=lambda x: x and x.startswith('tel:'))
+            if tel_link:
+                detail_info['phone'] = tel_link['href'].replace('tel:', '').strip()
+        
+        # 영업시간 추출
+        hours_keywords = ['영업시간', '운영시간', 'Hours', 'Open']
+        for keyword in hours_keywords:
+            hours_elem = soup.find(['span', 'p', 'div'], string=lambda text: text and keyword in text)
+            if hours_elem:
+                detail_info['hours'] = hours_elem.get_text().strip()
+                break
+        
+        # 상세 설명 추출
+        desc_elem = soup.find(['p', 'div'], class_=lambda x: x and ('description' in str(x).lower() or 'intro' in str(x).lower()))
+        if desc_elem:
+            detail_info['description'] = desc_elem.get_text().strip()
+        
+        # SNS 링크
+        kakao_link = soup.find('a', href=lambda x: x and 'kakao' in str(x).lower())
+        if kakao_link:
+            detail_info['kakao'] = kakao_link['href']
+            
+        insta_link = soup.find('a', href=lambda x: x and 'instagram' in str(x).lower())
+        if insta_link:
+            detail_info['instagram'] = insta_link['href']
+        
+        return detail_info
+        
+    except Exception as e:
+        print(f"   [경고] 상세 페이지 크롤링 오류: {e}")
+        return None
+
 def crawl_verychat_shops(url):
     # 브라우저 설정
     chrome_options = Options()
@@ -52,7 +115,7 @@ def crawl_verychat_shops(url):
     # 전체 페이지 소스 파싱
     print("[파싱] 데이터 파싱 중...")
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    driver.quit()
+    # driver는 상세 페이지 크롤링을 위해 여기서 닫지 않음
 
     shop_list = []
     # 상점 카드 요소들 찾기 (여러 선택자 시도)
@@ -108,14 +171,21 @@ def crawl_verychat_shops(url):
                 href = "https://pay.verychat.io" + href
 
             if name or address:  # 최소한 이름이나 주소가 있어야 함
-                shop_list.append({
+                shop_data = {
                     "name": name,
                     "address": address,
                     "category": category,
                     "veryPrice": price,
                     "paymentRatio": ratio,
-                    "link": href
-                })
+                    "link": href,
+                    "phone": "",
+                    "hours": "",
+                    "description": "",
+                    "kakao": "",
+                    "instagram": ""
+                }
+                
+                shop_list.append(shop_data)
                 
                 if idx % 100 == 0:
                     print(f"   {idx}개 처리 중...")
@@ -124,6 +194,25 @@ def crawl_verychat_shops(url):
             print(f"   [경고] {idx}번째 항목 파싱 오류: {e}")
             continue
 
+    print(f"\n[상세정보] 각 상점의 상세 페이지 크롤링 시작...")
+    print(f"   (총 {len(shop_list)}개 상점, 예상 소요 시간: {len(shop_list) * 2 // 60}분)")
+    
+    # 각 상점의 상세 페이지 방문하여 추가 정보 수집
+    for idx, shop in enumerate(shop_list, 1):
+        if shop['link']:
+            detail = crawl_shop_detail(driver, shop['link'])
+            if detail:
+                shop.update(detail)
+            
+            if idx % 50 == 0:
+                print(f"   {idx}/{len(shop_list)} 상점 상세정보 수집 완료...")
+            
+            # 서버 부하 방지를 위한 짧은 대기
+            time.sleep(0.5)
+    
+    driver.quit()
+    print(f"[완료] 모든 상세정보 수집 완료!")
+    
     return shop_list
 
 def save_data(data, format='json'):

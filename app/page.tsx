@@ -12,6 +12,12 @@ interface Shop {
   country?: string;
   state?: string;
   city?: string;
+  link?: string;
+  phone?: string;
+  hours?: string;
+  description?: string;
+  kakao?: string;
+  instagram?: string;
 }
 
 interface DosiItem {
@@ -224,12 +230,43 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-2 text-sm">
+                  {/* 주소 */}
                   <div className="flex items-start text-gray-600">
                     <span className="mr-2">📍</span>
                     <span className="flex-1">{shop.address}</span>
                   </div>
 
+                  {/* 전화번호 */}
+                  {shop.phone && (
+                    <div className="flex items-center text-gray-600">
+                      <span className="mr-2">📞</span>
+                      <a 
+                        href={`tel:${shop.phone.replace(/[^0-9]/g, '')}`}
+                        className="text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        {shop.phone}
+                      </a>
+                    </div>
+                  )}
 
+                  {/* 영업시간 */}
+                  {shop.hours && (
+                    <div className="flex items-start text-gray-600">
+                      <span className="mr-2">🕐</span>
+                      <span className="flex-1 text-xs">{shop.hours}</span>
+                    </div>
+                  )}
+
+                  {/* 상세 설명 */}
+                  {shop.description && (
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <p className="text-xs text-gray-600 line-clamp-2">
+                        {shop.description}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* VERY 단가 & 결제비율 */}
                   <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
                     {shop.veryPrice && (
                       <div className="flex items-center text-xs">
@@ -242,6 +279,40 @@ export default function Home() {
                         <span className="text-gray-500 mr-1">💳 결제비율:</span>
                         <span className="font-semibold text-gray-900">{shop.paymentRatio}</span>
                       </div>
+                    )}
+                  </div>
+
+                  {/* SNS 링크 & 상세보기 */}
+                  <div className="flex items-center gap-2 pt-2">
+                    {shop.kakao && (
+                      <a
+                        href={shop.kakao}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 bg-yellow-400 text-yellow-900 text-xs rounded-full hover:bg-yellow-500"
+                      >
+                        카카오톡
+                      </a>
+                    )}
+                    {shop.instagram && (
+                      <a
+                        href={shop.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 bg-pink-500 text-white text-xs rounded-full hover:bg-pink-600"
+                      >
+                        Instagram
+                      </a>
+                    )}
+                    {shop.link && (
+                      <a
+                        href={shop.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-auto px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full hover:bg-gray-200"
+                      >
+                        상세보기 →
+                      </a>
                     )}
                   </div>
                 </div>
