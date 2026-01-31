@@ -169,6 +169,46 @@ export default function Home() {
     });
   }, [shops, selectedSido, selectedSigungu, selectedPaymentRatio]);
 
+  // 평균 단가 계산 (필터링된 상점 중 VERY 단가가 있는 상점만)
+  const averagePrice = useMemo(() => {
+    const pricesWithUnit: { value: number; unit: string }[] = [];
+    
+    filteredShops.forEach(shop => {
+      const price = shop.veryPrice;
+      if (!price || price === '-') return;
+      
+      // 숫자 추출 (소수점, 쉼표 포함)
+      const numberMatch = price.match(/[\d,]+\.?\d*/);
+      if (!numberMatch) return;
+      
+      const value = parseFloat(numberMatch[0].replace(/,/g, ''));
+      if (isNaN(value)) return;
+      
+      // 단위 추출 (원, naira, $, pkr 등)
+      let unit = '원';
+      if (price.includes('원')) unit = '원';
+      else if (price.includes('naira')) unit = 'naira';
+      else if (price.includes('$') || price.includes('dollar')) unit = '$';
+      else if (price.includes('pkr')) unit = 'pkr';
+      else if (price.includes('VERY')) unit = 'VERY';
+      
+      pricesWithUnit.push({ value, unit });
+    });
+    
+    if (pricesWithUnit.length === 0) return null;
+    
+    // 원 단위만 평균 계산
+    const wonPrices = pricesWithUnit.filter(p => p.unit === '원');
+    if (wonPrices.length > 0) {
+      const avg = wonPrices.reduce((sum, p) => sum + p.value, 0) / wonPrices.length;
+      return { value: Math.round(avg), unit: '원', count: wonPrices.length };
+    }
+    
+    // 원 단위가 없으면 전체 평균 (단위 혼합)
+    const avg = pricesWithUnit.reduce((sum, p) => sum + p.value, 0) / pricesWithUnit.length;
+    return { value: Math.round(avg), unit: '', count: pricesWithUnit.length };
+  }, [filteredShops]);
+
   const handleSidoChange = (sido: string) => {
     setSelectedSido(sido);
     // 시도가 "전체"이면 시군구도 자동으로 "전체"로 설정
@@ -203,8 +243,23 @@ export default function Home() {
       {/* 헤더 */}
       <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white sticky top-0 z-10 shadow-lg">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">🗺️ 베리챗 상점</h1>
-          <p className="text-blue-100 text-sm mt-1">전 세계 베리챗 상점을 찾아보세요</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">🗺️ 베리챗 상점</h1>
+              <p className="text-blue-100 text-sm mt-1">전 세계 베리챗 상점을 찾아보세요</p>
+            </div>
+            {averagePrice && (
+              <div className="text-right">
+                <div className="text-xs text-blue-200">평균 단가</div>
+                <div className="text-lg font-bold">
+                  {averagePrice.value.toLocaleString()}{averagePrice.unit}
+                </div>
+                <div className="text-xs text-blue-200">
+                  ({averagePrice.count}개 매장 기준)
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
