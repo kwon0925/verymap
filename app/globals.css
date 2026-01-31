@@ -19,3 +19,28 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* 드롭다운 팝업 크기 제한 (모바일 최적화) */
+select {
+  font-size: 14px;
+}
+
+/* 모바일에서 드롭다운 옵션 리스트 크기 제한 */
+@media (max-width: 768px) {
+  select {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  /* iOS Safari에서 드롭다운 옵션 스타일 */
+  select option {
+    font-size: 14px;
+    padding: 8px;
+    max-height: 40px;
+  }
+  
+  /* Android Chrome에서 드롭다운 팝업 크기 제한 */
+  select:focus {
+    font-size: 14px;
+  }
+}
