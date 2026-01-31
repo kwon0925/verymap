@@ -14,8 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="antialiased bg-gray-50">
-        {children}
+      <body className="antialiased bg-gray-50 overflow-x-hidden">
+        <div className="max-w-full overflow-x-hidden">
+          {children}
+        </div>
       </body>
     </html>
   );

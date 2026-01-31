@@ -175,7 +175,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 w-full overflow-x-hidden">
       {/* 헤더 */}
       <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white sticky top-0 z-10 shadow-lg">
         <div className="container mx-auto px-4 py-4">
@@ -347,39 +347,33 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* SNS 링크 & 상세보기 */}
-                  <div className="flex items-center gap-2 pt-2">
-                    {shop.kakao && (
-                      <a
-                        href={shop.kakao}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1 bg-yellow-400 text-yellow-900 text-xs rounded-full hover:bg-yellow-500"
-                      >
-                        카카오톡
-                      </a>
-                    )}
-                    {shop.instagram && (
-                      <a
-                        href={shop.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1 bg-pink-500 text-white text-xs rounded-full hover:bg-pink-600"
-                      >
-                        Instagram
-                      </a>
-                    )}
-                    {shop.link && (
-                      <a
-                        href={shop.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-auto px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full hover:bg-gray-200"
-                      >
-                        상세보기 →
-                      </a>
-                    )}
-                  </div>
+                  {/* SNS 링크 */}
+                  {(shop.kakao || shop.instagram) && (
+                    <div className="flex items-center gap-2 pt-2">
+                      {shop.kakao && (
+                        <a
+                          href={shop.kakao}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-3 py-1 bg-yellow-400 text-yellow-900 text-xs rounded-full hover:bg-yellow-500"
+                        >
+                          카카오톡
+                        </a>
+                      )}
+                      {shop.instagram && (
+                        <a
+                          href={shop.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-3 py-1 bg-pink-500 text-white text-xs rounded-full hover:bg-pink-600"
+                        >
+                          Instagram
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -8,6 +8,8 @@
 
 html {
   -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -18,6 +20,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 /* 드롭다운 팝업 크기 제한 (모바일 최적화) */
