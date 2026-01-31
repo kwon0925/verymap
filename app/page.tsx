@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import dosiData from '@/dosi.json';
 import CustomSelect from './components/CustomSelect';
 
@@ -169,11 +170,26 @@ export default function Home() {
     });
   }, [shops, selectedSido, selectedSigungu, selectedPaymentRatio]);
 
-  // 평균 단가 계산 (필터링된 상점 중 VERY 단가가 있는 상점만)
+  // 한국 매장인지 확인하는 함수
+  const isKoreanShop = (shop: Shop): boolean => {
+    const address = shop.address || '';
+    // dosi.json의 모든 시도 이름과 매칭 확인
+    for (const sidoData of dosiData.sido) {
+      if (matchesSido(address, sidoData.name)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // 평균 단가 계산 (한국 매장만 기준, 필터링된 상점 중 VERY 단가가 있는 상점만)
   const averagePrice = useMemo(() => {
+    // 한국 매장만 필터링
+    const koreanShops = filteredShops.filter(isKoreanShop);
+    
     const pricesWithUnit: { value: number; unit: string }[] = [];
     
-    filteredShops.forEach(shop => {
+    koreanShops.forEach(shop => {
       const price = shop.veryPrice;
       if (!price || price === '-') return;
       
@@ -244,10 +260,10 @@ export default function Home() {
       <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white sticky top-0 z-10 shadow-lg">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div>
+            <Link href="/" className="cursor-pointer hover:opacity-80 transition-opacity">
               <h1 className="text-2xl font-bold">🗺️ 베리챗 상점</h1>
               <p className="text-blue-100 text-sm mt-1">전 세계 베리챗 상점을 찾아보세요</p>
-            </div>
+            </Link>
             {averagePrice && (
               <div className="text-right">
                 <div className="text-xs text-blue-200">평균 단가</div>
@@ -255,7 +271,7 @@ export default function Home() {
                   {averagePrice.value.toLocaleString()}{averagePrice.unit}
                 </div>
                 <div className="text-xs text-blue-200">
-                  ({averagePrice.count}개 매장 기준)
+                  (한국 {averagePrice.count}개 매장 기준)
                 </div>
               </div>
             )}
