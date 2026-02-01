@@ -257,21 +257,19 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-20 w-full overflow-x-hidden">
       {/* 헤더 */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white sticky top-0 z-10 shadow-lg">
-        <div className="container mx-auto px-4 py-4">
+      <header className="bg-gradient-to-r from-purple-600 to-purple-700 text-white sticky top-0 z-10 shadow-lg">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Link href="/" className="cursor-pointer hover:opacity-80 transition-opacity">
               <h1 className="text-2xl font-bold">🗺️ 베리챗 상점</h1>
-              <p className="text-blue-100 text-sm mt-1">전 세계 베리챗 상점을 찾아보세요</p>
             </Link>
             {averagePrice && (
               <div className="text-right">
-                <div className="text-xs text-blue-200">평균 단가</div>
-                <div className="text-lg font-bold">
-                  {averagePrice.value.toLocaleString()}{averagePrice.unit}
+                <div className="text-sm font-bold">
+                  평균단가(한국 {averagePrice.count}개 기준)
                 </div>
-                <div className="text-xs text-blue-200">
-                  (한국 {averagePrice.count}개 매장 기준)
+                <div className="text-lg font-bold mt-1">
+                  {averagePrice.value.toLocaleString()}{averagePrice.unit}
                 </div>
               </div>
             )}
