@@ -13,28 +13,33 @@ function getVisitorStats() {
   const today = new Date().toDateString();
   const todayKey = `visitor_${today}`;
   const totalKey = 'visitor_total';
+  const sessionKey = 'visitor_session';
   
-  // 오늘 방문자 수
-  const todayCount = parseInt(localStorage.getItem(todayKey) || '0', 10);
+  // 세션 확인 (이번 세션에 이미 카운트했는지)
+  const sessionId = sessionStorage.getItem(sessionKey);
+  const currentSession = Date.now().toString();
   
-  // 누적 방문자 수
-  const totalCount = parseInt(localStorage.getItem(totalKey) || '0', 10);
-  
-  // 오늘 첫 방문인지 확인
-  const lastVisit = localStorage.getItem('last_visit');
-  if (lastVisit !== today) {
-    // 오늘 방문자 수 증가
+  // 이번 세션에 카운트하지 않았다면 증가
+  if (!sessionId || sessionId !== currentSession) {
+    // 오늘 방문자 수
+    const todayCount = parseInt(localStorage.getItem(todayKey) || '0', 10);
     const newTodayCount = todayCount + 1;
     localStorage.setItem(todayKey, newTodayCount.toString());
     
-    // 누적 방문자 수 증가
+    // 누적 방문자 수
+    const totalCount = parseInt(localStorage.getItem(totalKey) || '0', 10);
     const newTotalCount = totalCount + 1;
     localStorage.setItem(totalKey, newTotalCount.toString());
     
-    localStorage.setItem('last_visit', today);
+    // 세션 저장
+    sessionStorage.setItem(sessionKey, currentSession);
     
     return { today: newTodayCount, total: newTotalCount };
   }
+  
+  // 이미 카운트했다면 현재 값 반환
+  const todayCount = parseInt(localStorage.getItem(todayKey) || '0', 10);
+  const totalCount = parseInt(localStorage.getItem(totalKey) || '0', 10);
   
   return { today: todayCount, total: totalCount };
 }
