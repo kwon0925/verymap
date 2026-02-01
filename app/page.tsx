@@ -136,7 +136,6 @@ export default function Home() {
   const [selectedSido, setSelectedSido] = useState<string>('');
   const [selectedSigungu, setSelectedSigungu] = useState<string>('');
   const [selectedPaymentRatio, setSelectedPaymentRatio] = useState<string>('');
-  const [visitorStats, setVisitorStats] = useState({ today: 0, total: 0 });
 
   useEffect(() => {
     // 데이터 로드
@@ -150,9 +149,6 @@ export default function Home() {
         console.error('데이터 로드 실패:', err);
         setLoading(false);
       });
-    
-    // 방문자 수 추적
-    setVisitorStats(getVisitorStats());
   }, []);
 
   // 시도 목록 (dosi.json에서)
@@ -309,9 +305,6 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <Link href="/" className="cursor-pointer hover:opacity-80 transition-opacity">
               <h1 className="text-2xl font-bold">🗺️ 베리챗 상점</h1>
-              <div className="text-xs text-purple-100 mt-0.5">
-                금일: {visitorStats.today.toLocaleString()}명 누적 {visitorStats.total.toLocaleString()}명
-              </div>
             </Link>
             {averagePrice && (
               <div className="text-right">
