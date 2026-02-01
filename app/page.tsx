@@ -96,31 +96,24 @@ function getSidoFromSigungu(sigunguName: string): string | null {
   return null;
 }
 
-// 주소가 특정 시도에 속하는지 확인하는 함수
+// 주소가 특정 시도에 속하는지 확인하는 함수 (간단한 방식)
 function matchesSido(address: string, sido: string): boolean {
   if (!address) return false;
   
   const normalizedAddress = address.replace(/\s/g, '');
   
-  // 1. 시도 이름 자체가 포함되어 있는지 확인 (가장 정확)
+  // 1. 시도 이름 자체가 포함되어 있는지 확인
   if (normalizedAddress.includes(sido)) {
     return true;
   }
   
-  // 2. 축약형 패턴 확인 (정확한 단어 매칭)
+  // 2. 축약형 패턴으로 검색 (예: "대전" → "대전광역시", "경남" → "경상남도")
   const patterns = SIDO_PATTERNS[sido] || [];
   for (const pattern of patterns) {
-    // 단어 경계를 고려한 정확한 매칭
-    const regex = new RegExp(`\\b${pattern}\\b`, 'i');
-    if (regex.test(normalizedAddress)) {
+    // 패턴이 주소에 포함되어 있으면 매칭
+    if (normalizedAddress.includes(pattern)) {
       return true;
     }
-  }
-  
-  // 3. 시군구 이름만 있는 경우 - dosi.json에서 시도 찾기
-  const addressSido = getSidoFromSigungu(address);
-  if (addressSido && addressSido === sido) {
-    return true;
   }
   
   return false;
