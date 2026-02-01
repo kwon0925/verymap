@@ -187,10 +187,16 @@ export default function Home() {
     return false;
   };
 
-  // 평균 단가 계산 (한국 매장만 기준, 필터링된 상점 중 VERY 단가가 있는 상점만)
+  // 평균 단가 계산 (전체 한국 매장 기준, VERY 단가가 있는 상점만)
   const averagePrice = useMemo(() => {
-    // 한국 매장만 필터링
-    const koreanShops = filteredShops.filter(isKoreanShop);
+    // 전체 매장에서 한국 매장만 필터링 (필터 무관)
+    const koreanShops = shops.filter(shop => {
+      // 기본 정보 유효성 검사
+      if (!shop.name || !shop.name.trim() || !shop.address || !shop.address.trim()) {
+        return false;
+      }
+      return isKoreanShop(shop);
+    });
     
     const pricesWithUnit: { value: number; unit: string }[] = [];
     
@@ -228,7 +234,7 @@ export default function Home() {
     // 원 단위가 없으면 전체 평균 (단위 혼합)
     const avg = pricesWithUnit.reduce((sum, p) => sum + p.value, 0) / pricesWithUnit.length;
     return { value: Math.round(avg), unit: '', count: pricesWithUnit.length };
-  }, [filteredShops]);
+  }, [shops]);
 
   const handleSidoChange = (sido: string) => {
     setSelectedSido(sido);
