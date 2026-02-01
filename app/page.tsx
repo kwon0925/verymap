@@ -143,6 +143,11 @@ export default function Home() {
   // 필터링된 상점 (지역 필터와 결제비율 필터 독립적으로 작동)
   const filteredShops = useMemo(() => {
     return shops.filter(shop => {
+      // 기본 정보 유효성 검사: 이름과 주소가 있어야 함
+      if (!shop.name || !shop.name.trim() || !shop.address || !shop.address.trim()) {
+        return false;
+      }
+      
       const address = shop.address;
       
       // 시도 필터 (유연한 매칭)
