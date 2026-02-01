@@ -14,11 +14,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" className="overflow-x-hidden">
+      <head>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9785548375633558"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className="antialiased bg-gray-50 overflow-x-hidden">
-        <div className="max-w-full overflow-x-hidden">
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   );
