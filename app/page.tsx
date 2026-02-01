@@ -278,7 +278,7 @@ export default function Home() {
       </header>
 
       {/* 필터 섹션 */}
-      <div className="bg-white shadow-md sticky top-[88px] z-10">
+      <div className="bg-white shadow-md sticky top-[72px] z-10">
         <div className="container mx-auto px-4 py-4">
           {/* 필터를 한 줄에 표시 (모바일 최적화) */}
           <div className="flex flex-wrap gap-2 items-end">
