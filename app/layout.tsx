@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,17 +13,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="overflow-x-hidden">
-      <head>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9785548375633558"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-      </head>
+    <html lang="ko">
       <body className="antialiased bg-gray-50 overflow-x-hidden">
-        {children}
+        <div className="max-w-full overflow-x-hidden">
+          {children}
+        </div>
       </body>
     </html>
   );

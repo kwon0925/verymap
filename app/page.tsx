@@ -3,10 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Script from 'next/script';
 import dosiData from '@/dosi.json';
 import CustomSelect from './components/CustomSelect';
-import AdSense from './components/AdSense';
 
 interface Shop {
   name: string;
@@ -372,11 +370,6 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* 필터 아래 애드센스 배너 */}
-            <div className="my-8">
-              <AdSense adSlot="2062514256" />
-            </div>
-
             {filteredShops.map((shop, index) => (
               <div
                 key={index}

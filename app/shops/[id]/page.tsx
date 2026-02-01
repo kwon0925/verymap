@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import AdSense from '@/app/components/AdSense';
 
 interface Shop {
   name: string;
@@ -155,11 +154,6 @@ export default function ShopDetail({ params }: { params: { id: string } }) {
             </div>
           )}
 
-          {/* 매장 소개 후 애드센스 인피드 */}
-          <div className="my-8">
-            <AdSense adSlot="2062514256" />
-          </div>
-
           {/* 원본 링크 */}
           {shop.link && (
             <div className="border-t pt-4">
@@ -183,11 +177,6 @@ export default function ShopDetail({ params }: { params: { id: string } }) {
           >
             ← 목록으로 돌아가기
           </button>
-        </div>
-
-        {/* 페이지 하단 애드센스 */}
-        <div className="my-8">
-          <AdSense adSlot="2062514256" />
         </div>
       </div>
     </div>
