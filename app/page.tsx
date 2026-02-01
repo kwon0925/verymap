@@ -98,37 +98,26 @@ function getSidoFromSigungu(sigunguName: string): string | null {
 
 // 주소가 특정 시도에 속하는지 확인하는 함수 (정확한 매칭)
 function matchesSido(address: string, sido: string): boolean {
-  const normalizedAddress = address.replace(/\s/g, '');
-  
-  // 1. 정확한 시도 이름이 포함되어 있는지 확인
-  if (normalizedAddress.includes(sido.replace(/\s/g, ''))) {
+  // 1. 정확한 시도 이름이 포함되어 있는지 확인 (우선순위 1)
+  if (address.includes(sido)) {
     return true;
   }
   
-  // 2. 축약형 패턴 확인 (더 정확하게)
+  // 2. 축약형 패턴 확인 (우선순위 2)
   const patterns = SIDO_PATTERNS[sido] || [];
   for (const pattern of patterns) {
-    // 패턴이 주소에 포함되어 있고, 다른 시도 이름과 겹치지 않는지 확인
-    if (normalizedAddress.includes(pattern)) {
-      // 다른 시도 이름이 포함되어 있지 않은지 확인 (오매칭 방지)
-      let hasConflict = false;
-      for (const [otherSido, otherPatterns] of Object.entries(SIDO_PATTERNS)) {
-        if (otherSido !== sido) {
-          // 다른 시도의 정확한 이름이 포함되어 있으면 충돌
-          if (normalizedAddress.includes(otherSido.replace(/\s/g, ''))) {
-            hasConflict = true;
-            break;
-          }
-          // 다른 시도의 패턴이 더 긴 경우 우선 (예: "경남" vs "경기")
-          for (const otherPattern of otherPatterns) {
-            if (otherPattern.length > pattern.length && normalizedAddress.includes(otherPattern)) {
-              hasConflict = true;
-              break;
-            }
-          }
+    // 패턴이 주소에 포함되어 있는지 확인
+    if (address.includes(pattern)) {
+      // 다른 시도의 정확한 이름이 먼저 포함되어 있으면 제외 (오매칭 방지)
+      let hasExactMatch = false;
+      for (const [otherSido] of Object.entries(SIDO_PATTERNS)) {
+        if (otherSido !== sido && address.includes(otherSido)) {
+          hasExactMatch = true;
+          break;
         }
       }
-      if (!hasConflict) {
+      // 정확한 시도 이름이 없을 때만 패턴 매칭 사용
+      if (!hasExactMatch) {
         return true;
       }
     }
