@@ -298,6 +298,11 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <Link href="/" className="cursor-pointer hover:opacity-80 transition-opacity">
               <h1 className="text-2xl font-bold">🗺️ 베리챗 상점</h1>
+              {visitorStats.total > 0 && (
+                <div className="text-xs text-purple-100 mt-0.5">
+                  금일: {visitorStats.today.toLocaleString()}명 누적 {visitorStats.total.toLocaleString()}명
+                </div>
+              )}
             </Link>
             {averagePrice && (
               <div className="text-right">
