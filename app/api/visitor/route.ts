@@ -61,24 +61,35 @@ export async function GET() {
 
 // POST: 방문자 수 증가
 export async function POST(request: NextRequest) {
-  const stats = readStats();
-  const today = new Date().toISOString().split('T')[0];
-  
-  // 날짜가 바뀌었으면 오늘 방문자 수 초기화
-  if (stats.lastUpdate !== today) {
-    stats.today = 0;
-    stats.lastUpdate = today;
+  try {
+    const stats = readStats();
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 날짜가 바뀌었으면 오늘 방문자 수 초기화
+    if (stats.lastUpdate !== today) {
+      stats.today = 0;
+      stats.lastUpdate = today;
+    }
+    
+    // 방문자 수 증가
+    stats.today += 1;
+    stats.total += 1;
+    
+    saveStats(stats);
+    
+    return NextResponse.json({
+      today: stats.today,
+      total: stats.total,
+      success: true
+    });
+  } catch (error) {
+    console.error('Error updating visitor count:', error);
+    // 에러 발생 시에도 기본값 반환
+    return NextResponse.json({
+      today: 0,
+      total: 0,
+      success: false,
+      error: 'Failed to update visitor count'
+    }, { status: 500 });
   }
-  
-  // 방문자 수 증가
-  stats.today += 1;
-  stats.total += 1;
-  
-  saveStats(stats);
-  
-  return NextResponse.json({
-    today: stats.today,
-    total: stats.total,
-    success: true
-  });
 }

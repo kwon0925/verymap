@@ -113,24 +113,22 @@ export default function Home() {
         setLoading(false);
       });
     
-    // 방문자 수 조회 및 증가
+    // 방문자 수 증가 (POST만 호출하면 자동으로 증가 후 반환)
     const updateVisitorCount = async () => {
       try {
-        // 먼저 현재 통계 조회
-        const getRes = await fetch('/api/visitor');
-        const getData = await getRes.json();
-        
-        // 방문자 수 증가
-        const postRes = await fetch('/api/visitor', {
+        const res = await fetch('/api/visitor', {
           method: 'POST',
         });
-        const postData = await postRes.json();
         
-        setVisitorStats({
-          today: postData.today,
-          total: postData.total
-        });
+        if (res.ok) {
+          const data = await res.json();
+          setVisitorStats({
+            today: data.today,
+            total: data.total
+          });
+        }
       } catch (error) {
+        // 방문자 수는 실패해도 앱 동작에는 영향 없음
         console.error('방문자 수 업데이트 실패:', error);
       }
     };
@@ -164,6 +162,58 @@ export default function Home() {
       return numB - numA; // 내림차순 정렬
     });
   }, [shops]);
+
+  // 시도 옵션 (카운트 포함)
+  const sidoOptions = useMemo(() => {
+    return [
+      { value: '', label: '전체' },
+      ...sidoList.map(sido => {
+        const count = shops.filter(s => 
+          s.name && s.name.trim() && s.address && s.address.trim() && 
+          matchesSido(s.address, sido)
+        ).length;
+        return {
+          value: sido,
+          label: `${sido} (${count})`
+        };
+      })
+    ];
+  }, [sidoList, shops]);
+
+  // 시군구 옵션 (카운트 포함)
+  const sigunguOptions = useMemo(() => {
+    if (!selectedSido) return [{ value: '', label: '전체' }];
+    return [
+      { value: '', label: '전체' },
+      ...sigunguList.map(sigungu => {
+        const count = shops.filter(s => 
+          s.name && s.name.trim() && s.address && s.address.trim() &&
+          matchesSido(s.address, selectedSido) && matchesSigungu(s.address, sigungu)
+        ).length;
+        return {
+          value: sigungu,
+          label: `${sigungu} (${count})`
+        };
+      })
+    ];
+  }, [selectedSido, sigunguList, shops]);
+
+  // 결제비율 옵션 (카운트 포함)
+  const paymentRatioOptions = useMemo(() => {
+    return [
+      { value: '', label: '전체' },
+      ...paymentRatioList.map(ratio => {
+        const count = shops.filter(s => 
+          s.name && s.name.trim() && s.address && s.address.trim() &&
+          s.paymentRatio === ratio
+        ).length;
+        return {
+          value: ratio,
+          label: `${ratio} (${count})`
+        };
+      })
+    ];
+  }, [paymentRatioList, shops]);
 
   // 필터링된 상점 (지역 필터와 결제비율 필터 독립적으로 작동)
   const filteredShops = useMemo(() => {
@@ -331,16 +381,7 @@ export default function Home() {
               <CustomSelect
                 value={selectedSido}
                 onChange={(value) => handleSidoChange(value)}
-                options={[
-                  { value: '', label: '전체' },
-                  ...sidoList.map(sido => {
-                    const count = shops.filter(s => matchesSido(s.address, sido)).length;
-                    return {
-                      value: sido,
-                      label: `${sido} (${count})`
-                    };
-                  })
-                ]}
+                options={sidoOptions}
                 placeholder="전체"
                 className="w-full"
               />
@@ -354,18 +395,7 @@ export default function Home() {
               <CustomSelect
                 value={selectedSido ? selectedSigungu : ''}
                 onChange={(value) => setSelectedSigungu(value)}
-                options={[
-                  { value: '', label: '전체' },
-                  ...(selectedSido ? sigunguList.map(sigungu => {
-                    const count = shops.filter(s => 
-                      matchesSido(s.address, selectedSido) && matchesSigungu(s.address, sigungu)
-                    ).length;
-                    return {
-                      value: sigungu,
-                      label: `${sigungu} (${count})`
-                    };
-                  }) : [])
-                ]}
+                options={sigunguOptions}
                 placeholder="전체"
                 disabled={!selectedSido}
                 className="w-full"
@@ -380,16 +410,7 @@ export default function Home() {
               <CustomSelect
                 value={selectedPaymentRatio}
                 onChange={(value) => setSelectedPaymentRatio(value)}
-                options={[
-                  { value: '', label: '전체' },
-                  ...paymentRatioList.map(ratio => {
-                    const count = shops.filter(s => s.paymentRatio === ratio).length;
-                    return {
-                      value: ratio,
-                      label: `${ratio} (${count})`
-                    };
-                  })
-                ]}
+                options={paymentRatioOptions}
                 placeholder="전체"
                 className="w-full"
               />
@@ -411,9 +432,11 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredShops.map((shop, index) => (
+            {filteredShops.map((shop) => {
+              const shopId = shop.link?.split('/').pop() || shop.name;
+              return (
               <div
-                key={index}
+                key={shopId}
                 onClick={() => handleShopClick(shop)}
                 className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all p-4 border border-gray-100 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
               >
@@ -510,7 +533,8 @@ export default function Home() {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

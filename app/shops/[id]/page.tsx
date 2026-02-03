@@ -26,10 +26,20 @@ export default function ShopDetail({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetch('/data/shops.json')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('데이터를 불러올 수 없습니다');
+        }
+        return res.json();
+      })
       .then((data: Shop[]) => {
         // id로 상점 찾기 (링크의 마지막 부분과 매칭)
-        const foundShop = data.find(s => s.link?.includes(params.id));
+        const shopId = params.id;
+        const foundShop = data.find(s => {
+          if (!s.link) return false;
+          const linkId = s.link.split('/').pop();
+          return linkId === shopId;
+        });
         setShop(foundShop || null);
         setLoading(false);
       })
