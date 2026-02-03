@@ -98,6 +98,7 @@ export default function Home() {
   const [selectedSido, setSelectedSido] = useState<string>('');
   const [selectedSigungu, setSelectedSigungu] = useState<string>('');
   const [selectedPaymentRatio, setSelectedPaymentRatio] = useState<string>('');
+  const [visitorStats, setVisitorStats] = useState({ today: 0, total: 0 });
 
   useEffect(() => {
     // 데이터 로드
@@ -111,6 +112,30 @@ export default function Home() {
         console.error('데이터 로드 실패:', err);
         setLoading(false);
       });
+    
+    // 방문자 수 조회 및 증가
+    const updateVisitorCount = async () => {
+      try {
+        // 먼저 현재 통계 조회
+        const getRes = await fetch('/api/visitor');
+        const getData = await getRes.json();
+        
+        // 방문자 수 증가
+        const postRes = await fetch('/api/visitor', {
+          method: 'POST',
+        });
+        const postData = await postRes.json();
+        
+        setVisitorStats({
+          today: postData.today,
+          total: postData.total
+        });
+      } catch (error) {
+        console.error('방문자 수 업데이트 실패:', error);
+      }
+    };
+    
+    updateVisitorCount();
   }, []);
 
   // 시도 목록 (dosi.json에서)
